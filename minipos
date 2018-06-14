@@ -360,7 +360,7 @@ def create_invoice(parameters):
 		image.paste(icon, (image_width // 2 - icon_width // 2, image_height // 2 - icon_height // 2))
 	# Convert QR code into text data
 	output = io.BytesIO()
-	image.save(output, format='PNG')
+	image.save(output)
 	output = base64.b64encode(output.getvalue()).decode('UTF-8')
 	filler = {
 		'addr': address,
