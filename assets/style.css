@@ -96,7 +96,8 @@ tr.expand span.address {
 	100% { opacity: 0; }
 }
 
-input {
+input[type="button"], input[type="text"], input[type="submit"],
+input[type="reset"], input[type="number"], input[type="email"] {
 	width: 16.67vmin;
 	height: 16.67vmin;
 	font-size: 10vmin;
@@ -114,12 +115,25 @@ input {
 	-webkit-border-radius: 1.67vmin;
 }
 
+input[type="checkbox"], input[type="radio"] {
+	width: 2.5vmin;
+	height: 2.5vmin;
+	margin-right: 1vmin;
+	vertical-align: middle;
+	-webkit-appearance: checkbox,radio;
+}
+
 input:active {
 	border-color: #808080 #e6e6e6 #e6e6e6 #808080;
 }
 
 input:disabled {
 	color: #bfbfbf;
+}
+
+input[type="button"]:disabled, input[type="submit"]:disabled,
+input[type="reset"]:disabled, input[type="email"]:disabled {
+	border-color: #e6e6e6 #808080 #808080 #e6e6e6;
 }
 
 input.text, input.text:active {
@@ -235,7 +249,7 @@ img.icon {
 
 #popup {
 	width: 80vmin;
-	position: absolute;
+	position: fixed;
 	margin: auto;
 	top: 38vmin;
 	left: 0;
@@ -252,6 +266,10 @@ img.icon {
 }
 #popup a:visited {
 	color: #cda9ef;
+}
+
+#begin {
+	font-weight: bold;
 }
 
 @media print {

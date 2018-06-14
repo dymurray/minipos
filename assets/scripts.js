@@ -33,6 +33,16 @@ function jsCheckReady(code) {
 	}
 }
 
+// Get the current style of an element
+function getStyle(element) {
+	if ( element.computedStyle ) {
+		return element.computedStyle;
+	}
+	else {
+		return getComputedStyle(element, null);
+	}
+}
+
 // Form button controls
 function textAppend(value) {
 	document.getElementById("amountbox").value += value;
@@ -98,6 +108,16 @@ function addTax() {
 	if ( field.value.substring(field.value.length - 3, field.value.length) == ".00" ) {
 		field.value = field.value.substring(0, field.value.length - 3);
 	}
+	document.getElementById("tax").disabled = true;
+	return_timer = 0;
+}
+
+// Reset tax button lock to initial state
+function resetTaxLock() {
+	var percents = document.getElementById("percents").innerHTML;
+	if ( percents != "0.0%" ) {
+		document.getElementById("tax").disabled = false;
+	}
 	return_timer = 0;
 }
 
@@ -149,7 +169,12 @@ function showConfirmButton(response) {
 		case "5":
 			displayPopup("<strong class=\"error\">Double spend detected!</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
 			setTimeout(checkPayment, 30000);
-		}
+			break;
+		// Low fee warning
+		case "6":
+			displayPopup("<strong>Low fee transaction!</strong><br>Transaction ID: <a class=\"txid\" href=\"https:\/\/bch.btc.com/" + txid + "\" target=\"_blank\"> " + txid + "</a>");
+			setTimeout(checkPayment, 10000);
+	}
 }
 
 // Display an informational popup dialog
@@ -170,10 +195,30 @@ function dismissPopup() {
 	popupBox.style.animation = "initial";
 	popupBox.style.WebkitAnimation = "initial";
 }
+// Pulsate a button
+function pulsateButton(button, callback) {
+	switch ( button.value ) {
+		case "·    ":
+			button.value = "··   ";
+			break;
+		case "··   ":
+			button.value = "···  ";
+			break;
+		case "···  ":
+			button.value = "···· ";
+			break;
+		case "···· ":
+			button.value = "·····";
+			break;
+		default:
+			button.value = "·    ";
+	}
+	setTimeout(callback, 100);
+}
 
 // Check whether or not payment was made
 function checkPayment() {
-	if (document.getElementById("finish").style.display == "none") {
+	if ( getStyle(document.getElementById("finish")).display == "none" ) {
 		loadHTTP("check?" + request_string, showConfirmButton);
 	}
 }
@@ -202,38 +247,22 @@ function emailStatus() {
 }
 function checkEmailSent(response) {
 	var button = document.getElementById("email");
+	var defaultText = "Email";
 	switch ( response ) {
 		case "0":
 			displayPopup("Email not configured.", true);
 			break;
 		case "1":
-			button.value = "Email";
+			button.value = defaultText;
 			displayPopup("Email sent.", true);
 			break;
 		case "2":
-			button.value = "Email";
+			button.value = defaultText;
 			displayPopup("Email sending failed. See the server log for more information.", true);
 			break;
-		// Replace the email button with a spinner
+		// Waiting for response
 		case "-1":
-			switch ( button.value ) {
-				case "Email":
-				case "·····":
-					button.value = "·    ";
-					break;
-				case "·    ":
-					button.value = "··   ";
-					break;
-				case "··   ":
-					button.value = "···  ";
-					break;
-				case "···  ":
-					button.value = "···· ";
-					break;
-				case "···· ":
-					button.value = "·····";
-			}
-			setTimeout(emailStatus, 100);
+			pulsateButton(button, emailStatus);
 	}
 }
 
@@ -255,7 +284,7 @@ function returnTimer() {
 function copy() {
 	var field = document.getElementById("copy");
 	// Only process if there is no current popup
-	if ( document.getElementById("popup").style.display == "none" ) {
+	if ( getStyle(document.getElementById("popup")).display == "none" ) {
 		try {
 			field.style.display = "block";
 			field.select();
@@ -272,7 +301,7 @@ function copy() {
 function toggleRow(row) {
 	var table_row = document.getElementById("row" + row),
 	toggle = document.getElementById("toggle" + row);
-	if ( ( table_row.computedStyle && table_row.computedStyle.display == "none" ) || getComputedStyle(table_row, null).display == "none" ) {
+	if ( getStyle(table_row).display == "none" ) {
 		table_row.style.display = "table-row";
 		toggle.innerHTML = "&ndash;";
 	}
@@ -280,4 +309,29 @@ function toggleRow(row) {
 		table_row.style.display = "none";
 		toggle.innerHTML = "+";
 	}
+}
+
+// Sanitize invoice page
+function sanitizeInvoice() {
+	// Unset z-index of all elements
+	var all = document.getElementsByTagName("*");
+	for ( i = 0; i < all.length; i++ ) {
+		if ( getStyle(all[i]).zIndex == 2147483647 ) {
+			all[i].style.zIndex = 0;
+		}
+	}
+	// Set QR code style
+	var qr = document.getElementById("qr");
+	qr.style.display = "inline-block";
+	qr.style.position = "relative";
+	qr.style.top = 0;
+	qr.style.bottom = 0;
+	qr.style.left = "auto";
+	qr.style.right = "auto";
+	qr.style.zIndex = 2147483647;
+	qr.style.width = "80vmin";
+	qr.style.height = "auto";
+	// Set popup style
+	var popup = document.getElementById("popup");
+	popup.style.zIndex = 2147483647;
 }
